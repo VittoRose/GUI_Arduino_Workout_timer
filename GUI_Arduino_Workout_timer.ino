@@ -8,11 +8,13 @@
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 
+// screen constant
 #define XWIN     240
 #define YWIN     320
 #define MINPRESSURE 200
 #define MAXPRESSURE 1000
-#define DDELAY  500
+
+// colors
 #define BLACK   0x0000
 #define BLUE    0x001F
 #define RED     0xF800
@@ -35,19 +37,17 @@ const int TS_LEFT = 954, TS_RT = 90, TS_TOP = 65, TS_BOT = 913;
 
 MCUFRIEND_kbv tft;
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
-Adafruit_GFX_Button b[3][2], conf;
+Adafruit_GFX_Button b[4][2], conf;
 
 unsigned long timer = 0;
 unsigned long motor_timer = 0;
 char s[30];
 
-int counter[3] = {0, 0, 1};
+int counter[4] = {30, 30, 1, 30};
 int buff[3] = {0, 0, 0};
 
 bool flag[4] = {0, 0, 0, 0};
 bool stato[3] = {0, 0, 0};
-
-int time = 5;                           // get ready time
 
 int pixel_x, pixel_y;     //Touch_getXY() updates global vars
 
@@ -80,19 +80,22 @@ void setup() {
 
   b[0][0].initButton(&tft, 28, 30, 50, 50, BLACK, BLACK, GREEN, "+", 3);
   b[0][1].initButton(&tft, 210, 30, 50, 50, BLACK, BLACK, RED, "-", 3);
-  b[1][0].initButton(&tft, 28, 100, 50, 50, BLACK, BLACK, GREEN, "+", 3);
-  b[1][1].initButton(&tft, 210, 100, 50, 50, BLACK, BLACK, RED, "-", 3);
-  b[2][0].initButton(&tft, 28, 170, 50, 50, BLACK, BLACK, GREEN, "+",3);
-  b[2][1].initButton(&tft, 210, 170, 50, 50, BLACK, BLACK, RED, "-",3);
+  b[1][0].initButton(&tft, 28, 95, 50, 50, BLACK, BLACK, GREEN, "+", 3);
+  b[1][1].initButton(&tft, 210, 95, 50, 50, BLACK, BLACK, RED, "-", 3);
+  b[2][0].initButton(&tft, 28, 160, 50, 50, BLACK, BLACK, GREEN, "+",3);
+  b[2][1].initButton(&tft, 210, 160, 50, 50, BLACK, BLACK, RED, "-",3);
+  b[3][0].initButton(&tft, 28, 225, 50, 50, BLACK, BLACK, GREEN, "+", 3);
+  b[3][1].initButton(&tft, 210, 225, 50, 50, BLACK, BLACK, RED, "-", 3);
+
 
   conf.initButton(&tft, XWIN/2, YWIN - 30, XWIN - 20, 50, BLACK, BLACK, GREEN, "CONFIRM", 3 );
 
-  for(i = 0; i < 3; i++ ) {
+  for(i = 0; i < 4; i++ ) {
     b[i][0].drawButton(true);
     b[i][1].drawButton(true);
   }
   
-  for(i = 0; i < 3; i++)  draw_settings(counter[i],i);
+  for(i = 0; i < 4; i++)  draw_settings(counter[i],i);
 
   conf.drawButton(true);
 }
@@ -131,12 +134,14 @@ void loop() {
 void set_training(){
   bool down = Touch_getXY();
   int i = 0;
-  for(i=0; i<3; i++){ 
+  for(i=0; i<4; i++){ 
+
     b[i][0].press(down && b[i][0].contains(pixel_x, pixel_y));
     b[i][1].press(down && b[i][1].contains(pixel_x, pixel_y));
+  
   }
 
-  for(i = 0; i < 3; i++){
+  for(i = 0; i < 4; i++){
 
     if(b[i][0].justReleased()) {
       counter[i]++;
@@ -179,32 +184,48 @@ void draw_settings(int counter, int index){
   else if(index == 1){
     
     tft.setTextSize(2);
-    tft.setCursor(65, 80);
+    tft.setCursor(65, 75);
     tft.setTextColor(TXT);
     
     tft.print("REST TIME");
     sprintf(s,"%d m - %d s", min, sec);
-    tft.fillRect(55, 105, 125, 15, BKG);
+    tft.fillRect(55, 100, 125, 15, BKG);
     
-    tft.drawRect(55, 105, 125, 15, WHITE);
+    tft.drawRect(55, 100, 125, 15, WHITE);
     tft.setTextSize(1);
-    tft.setCursor(85, 108);
+    tft.setCursor(85, 103);
     
     tft.print(s);
   }
   else if (index == 2){
     
     tft.setTextSize(2);
-    tft.setCursor(60, 150);
+    tft.setCursor(60, 140);
     tft.setTextColor(TXT);
     
     tft.print("SET NUMBER");
     sprintf(s,"%d", counter);
-    tft.fillRect(55, 175, 125, 15, BKG);
+    tft.fillRect(55, 165, 125, 15, BKG);
     
-    tft.drawRect(55, 175, 125, 15, WHITE);
+    tft.drawRect(55, 165, 125, 15, WHITE);
     tft.setTextSize(1);
-    tft.setCursor(117, 178);
+    tft.setCursor(117, 168);
+    
+    tft.print(s);
+  }
+
+  else if (index == 3){
+    tft.setTextSize(2);
+    tft.setCursor(63, 205);
+    tft.setTextColor(TXT);
+    
+    tft.print("COUNTDOWN");
+    sprintf(s,"%d", counter);
+    tft.fillRect(55, 230, 125, 15, BKG);
+    
+    tft.drawRect(55, 230, 125, 15, WHITE);
+    tft.setTextSize(1);
+    tft.setCursor(115, 233);
     
     tft.print(s);
   }
@@ -229,19 +250,19 @@ void get_ready(void){
     tft.setTextSize(8);
     tft.setTextColor(BLACK);
     
-    if(time >= 10) tft.setCursor(75, 140);
+    if(counter[3] >= 10) tft.setCursor(75, 140);
     else tft.setCursor(100,140);
 
     tft.fillRect(20,130, 200, 100, YELLOW);
-    sprintf(s, "%d", time);
+    sprintf(s, "%d", counter[3]);
     tft.print(s);
 
-    if(time <= 3 && time != 0) tone(BUZZER, FREQ, BZZTIME);;
+    if(counter[3] <= 3 && counter[3] != 0) tone(BUZZER, FREQ, BZZTIME);;
 
-    time--;
+    counter[3]--;
       
-    if(time < 0) {
-      time = 0;
+    if(counter[3] < 0) {
+      counter[3] = 0;
       flag[1] = !flag[1];
     }
       timer = millis();
