@@ -26,10 +26,10 @@
 #define BKG     0x0000        //black
 #define TXT     0xFFFF        //white
 
-#define BUZZER  11
+#define BUZZER  10
+#define MOTOR   11
 #define FREQ    1000
 #define BZZTIME 200
-#define MOTOR   12
 
 // the following value might depends on the specific display
 const int XP = 8, XM = A2,YP = A3, YM = 9; //240x320 ID=0x9341
@@ -257,13 +257,15 @@ void get_ready(void){
     sprintf(s, "%d", counter[3]);
     tft.print(s);
 
-    if(counter[3] <= 3 && counter[3] != 0) tone(BUZZER, FREQ, BZZTIME);;
+    if(counter[3] <= 3 && counter[3] != 0) tone(BUZZER, FREQ, BZZTIME);
 
     counter[3]--;
       
     if(counter[3] < 0) {
+      tone(BUZZER, FREQ, 100);
       counter[3] = 0;
       flag[1] = !flag[1];
+      tone(BUZZER, FREQ, 100);      
     }
       timer = millis();
     }
@@ -323,7 +325,7 @@ void run_work(){
     if(buff[0] <= 3 && buff[0] != 0) tone(BUZZER, FREQ, BZZTIME);
     
     if(buff[0] <= 1) {
-      digitalWrite(MOTOR, HIGH);
+      analogWrite(MOTOR, 200);
       motor_timer = millis();
     }
 
@@ -367,7 +369,7 @@ void run_rest(){
 
   }
 
-  if(millis() - motor_timer >= 1500) digitalWrite(MOTOR, LOW);
+  if(millis() - motor_timer >= 2500) analogWrite(MOTOR, 0);
 
   if(millis() - timer >= 1000){
 
